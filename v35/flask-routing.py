@@ -10,6 +10,7 @@ def home():
             <ul>
             <li>/user/[username]</li>
             <li>/search?q=[query]</li>
+            <li>/form</li>
             </ul>
             '''
 
@@ -24,6 +25,26 @@ def search():
     # request.args contains information from the query string
     query = request.args.get('q', '')
     return f'Search query: {query}'
+
+# GET route that displays a simple form POSTing to the /submit route
+@app.route('/form')
+def form():
+    return '''
+        <form action="/submit" method="post">
+            <label for="data">Enter something:</label>
+            <input type="text" id="data" name="data"><br>
+            <input type="checkbox" id="checkbox" name="checkbox"><label for="checkbox">Check this</label> <br>
+            <input type="submit" value="Submit">
+        </form>
+    '''
+
+# Example of a simple POST route that handles POST requests to /submit
+@app.route('/submit', methods=['POST'])
+def submit():
+    # request.form is a dictionary-like object containing form data
+    data = request.form.get('data', '')  #form data is captured here using the name attribute of the input
+    checkbox = request.form.get('checkbox', False)
+    return f'Skickat via POST: {data}, Checkbox: {checkbox}'
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
