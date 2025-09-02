@@ -1,0 +1,16 @@
+<html> 
+
+<head> 
+    <!-- JS-filen och CSS-filen ligger båda i en mapp med namnet "static" -->
+    <script type = "text/javascript"
+        src = "{{ url_for('static', filename = 'hello.js') }}" ></script> 
+    <link rel="stylesheet" href="/static/style.css">
+</head> 
+    
+<body> 
+    <input type = "button" onclick = "sayHello()" value = "Say Hello" /> 
+    <!-- Bildfilen ligger i samma mapp som JS-filen, observera värdet hos attributet src -->
+    <img src="/static/bild.jpg" alt="Bild på läraren">
+</body> 
+    
+</html>
