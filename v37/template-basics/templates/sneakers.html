@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sneaker List</title>
+</head>
+<body>
+    <h1>Sneaker List</h1>
+    <ul>
+    <!-- Check if the sneakers list is not empty. If so then display the available sneakers. -->
+    {% if sneakers %}
+        <p>Available Sneakers:</p>
+    {% else %}
+        <p>No sneakers available.</p>
+    {% endif %}
+    <!-- Loop through the sneakers list and display each sneaker's brand, model, and price -->
+    {% for sneaker in sneakers %}
+        <li>
+            <strong>{{ sneaker.brand }}</strong> - {{ sneaker.model }} (SEK{{ sneaker.price }})
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="/">Back to Home</a>
+</body>
+</html>

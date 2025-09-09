@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{# this title block overrides the title block in _base.html #} 
+{% block title %}Home - Flask Template Inheritance{% endblock %}
+{# this content block overrides the content block in _base.html #} 
+{% block content %}
+    <h2>Welcome to the Home Page!</h2>
+    <p>This page uses template inheritance from layout.html.</p>
+{% endblock %}

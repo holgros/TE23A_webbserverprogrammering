@@ -1,0 +1,21 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+nav {
+    margin: 0;
+    background-color: #91c3f5;
+    padding: 1rem;
+}
+main {
+    padding: 1rem;
+    background-color: #f0f0f0;
+}
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    background-color: #91c3f5;
+}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Product - Flask Template Inheritance{% endblock %}
+{% block content %}
+    <h2>Products</h2>
+    <ul>
+    {% for sneaker in sneakers %}
+        <li>
+            <strong>{{ sneaker.name }}</strong> - ${{ sneaker.price }}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
