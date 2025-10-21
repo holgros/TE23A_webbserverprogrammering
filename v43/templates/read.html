@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+</style>
+    <h2>Läs från databas</h2>
+    <table>
+        <tr>
+            <th>id</th>
+            <th>Förnamn</th>
+            <th>Efternamn</th>
+            <th>Klass</th>
+        </tr>
+{% for student in students %}
+        <tr>
+            <!-- i tur och ordning: id, fornamn, efternamn, klass -->
+            <td>{{ student[0] }}</td>
+            <td>{{ student[1] }}</td>
+            <td>{{ student[2] }}</td>
+            <td>{{ student[3] }}</td>
+        </tr>
+{% endfor %}
+    </table>
+{% endblock %}
