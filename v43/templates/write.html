@@ -1,5 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2>Skriv till databas</h2>
-    <p>Under konstruktion...</p>
+    <form action="/write" method="post">
+        <label for="fornamn">Förnamn:</label><br>
+        <input type="text" id="fornamn" name="fornamn"><br>
+        <label for="efternamn">Efternamn:</label><br>
+        <input type="text" id="efternamn" name="efternamn"><br>
+        <label for="klass">Klass:</label><br>
+        <select name="klass" id="klass">
+            <option value="TE23A">TE23A</option>
+            <option value="TE23B">TE23B</option>
+            <option value="TE23C">TE23C</option>
+            <option value="TE23D">TE23D</option>
+            <option value="TE23E">TE23E</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Spara">
+    </form> 
 {% endblock %}

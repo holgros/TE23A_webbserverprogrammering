@@ -8,8 +8,8 @@ CREATE TABLE students (
 );
 Alternativt får du anpassa nedanstående anrop så att de fungerar för din tabell
 """
-from flask import Flask, render_template, request
-import mysql.connector
+from flask import Flask, redirect, render_template, request, url_for
+import mysql.connector  # installera med "pip install mysql-connector-python" i kommandotolken, ifall du inte redan gjort detta
 
 app = Flask(__name__)
 
@@ -28,9 +28,26 @@ def read():
     return render_template('read.html', students=students)
 
 # skriv till databas
-@app.route('/write')
+@app.route('/write', methods=['GET', 'POST'])
 def write_form():
-    return render_template('write.html')
+    if request.method == 'GET':
+        return render_template('write.html')
+    else: # POST
+        fornamn = request.form.get('fornamn', '')
+        efternamn = request.form.get('efternamn', '')
+        klass = request.form.get('klass', '')
+        db = get_connection()
+        mycursor = db.cursor()
+        sql = "INSERT INTO students (fornamn, efternamn, klass) VALUES (%s, %s, %s)"
+        val = (fornamn, efternamn, klass)
+        mycursor.execute(sql, val)
+        db.commit()
+        return redirect(url_for('confirm'))
+
+# visa bekräftelse
+@app.route('/confirm')
+def confirm():
+    return render_template("confirm.html")
 
 # skapa databasuppkoppling
 def get_connection(host="localhost", user="root", password=""):
