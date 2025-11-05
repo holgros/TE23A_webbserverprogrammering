@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, render_template, session, redirect, url_for, request
 import mysql.connector  # installera med "pip install mysql-connector-python" i kommandotolken, ifall du inte redan gjort detta
 
@@ -23,8 +24,7 @@ def index():
         mycursor = db.cursor()
         mycursor.execute("SELECT * FROM users")
         users = mycursor.fetchall()
-        for user in users:
-            
+        for user in users:            
             # varje user i loopen är en 4-tippel på formen (username, password, email, id)
             if request.form['name'] == user[0] and request.form['password'] == user[1]:
                 # i själva verket bör inte lösenord lagras i klartext utan vara krypterade - mer om detta senare i kursen
@@ -33,8 +33,7 @@ def index():
                 break
         if not logged_in: # om hela loopen har gått utan att någon matchning hittats
             session.clear()
-        return redirect(url_for('login'))
-    
+        return redirect(url_for('login'))    
     # Det här returneras om GET-anrop görs
     return render_template('home.html')
 
@@ -48,7 +47,11 @@ def login():
 @app.route('/annansida')
 def annansida():
     if session:
-        return render_template('annansida.html', user=session['user'])
+        db = get_connection()
+        mycursor = db.cursor()
+        mycursor.execute("SELECT * FROM posts ORDER BY time DESC") # nyaste inlägget överst
+        posts = mycursor.fetchall()
+        return render_template('annansida.html', user=session['user'], posts=posts)
     else:
         return render_template('error.html')
 
@@ -61,9 +64,15 @@ def logout():
 def append():
     if not session: # om man inte är inloggad
         return render_template('error.html')
-    line = f'{session['user']['username']} skrev: {request.form.get('line', '')}'
-    with open('meddelanden.txt', 'a', encoding='utf-8') as f:
-        f.write(line + '\n')
+    author = session['user']['username']
+    text = request.form.get('line', '')
+    now = datetime.datetime.now()
+    db = get_connection()
+    mycursor = db.cursor()
+    sql = "INSERT INTO posts (author, text, time) VALUES (%s, %s, %s)"
+    val = (author, text, now)
+    mycursor.execute(sql, val)
+    db.commit()
     return redirect('/annansida')
 
 if __name__ == '__main__':
