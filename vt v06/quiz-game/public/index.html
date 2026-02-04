@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz - Spelare</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        .options button { display: block; margin: 10px auto; padding: 10px; width: 200px; }
+        .correct { background: lightgreen; }
+        .wrong { background: pink; }
+    </style>
+</head>
+<body>
+    <div id="joinScreen">
+        <h1>Quiz Spelet</h1>
+        <input id="playerName" placeholder="Ditt namn">
+        <button onclick="joinGame()">Gå med</button>
+    </div>
+    
+    <div id="gameScreen" style="display:none;">
+        <h2>Välkommen <span id="playerDisplay"></span>!</h2>
+        <h3>Poäng: <span id="score">0</span></h3>
+        
+        <div id="questionContainer" style="display:none;">
+            <h3 id="questionText"></h3>
+            <div id="options"></div>
+        </div>
+        
+        <div id="waiting">Väntar på nästa fråga...</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let playerName = '';
+        
+        function joinGame() {
+            playerName = document.getElementById('playerName').value;
+            if (!playerName) return;
+            
+            socket.emit('join', playerName);
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('playerDisplay').textContent = playerName;
+        }
+        
+        socket.on('welcome', (message) => {
+            alert(message);
+        });
+        
+        socket.on('question', (question) => {
+            document.getElementById('waiting').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            
+            document.getElementById('questionText').textContent = question.text;
+            
+            let optionsHtml = '';
+            for (let key in question.options) {
+                optionsHtml += `
+                    <button onclick="answer('${key}')">
+                        ${key}: ${question.options[key]}
+                    </button>
+                `;
+            }
+            document.getElementById('options').innerHTML = optionsHtml;
+        });
+        
+        socket.on('playersUpdate', (players) => {
+            for (let id in players) {
+                if (players[id].name === playerName) {
+                    document.getElementById('score').textContent = players[id].score;
+                }
+            }
+        });
+        
+        function answer(choice) {
+            socket.emit('answer', { answer: choice });
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('waiting').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

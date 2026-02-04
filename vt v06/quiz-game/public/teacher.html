@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz - Lärarvy</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .question-form { margin: 20px 0; }
+        .answer { padding: 5px; margin: 5px; background: #eee; }
+        .correct { background: lightgreen; }
+    </style>
+</head>
+<body>
+    <h1>Quiz Kontrollpanel</h1>
+    
+    <div class="question-form">
+        <h3>Skicka en fråga:</h3>
+        <input id="question" placeholder="Fråga" style="width: 300px;"><br><br>
+        <input id="optionA" placeholder="Alternativ A">
+        <input id="optionB" placeholder="Alternativ B">
+        <input id="optionC" placeholder="Alternativ C"><br><br>
+        Rätt svar: 
+        <select id="correctAnswer">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+        </select>
+        <button onclick="sendQuestion()">Skicka fråga</button>
+    </div>
+
+    <h3>Spelare online: <span id="playerCount">0</span></h3>
+    <div id="players"></div>
+    
+    <h3>Svar:</h3>
+    <div id="answers"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        function sendQuestion() {
+            const question = {
+                text: document.getElementById('question').value,
+                options: {
+                    A: document.getElementById('optionA').value,
+                    B: document.getElementById('optionB').value,
+                    C: document.getElementById('optionC').value
+                },
+                correct: document.getElementById('correctAnswer').value
+            };
+            socket.emit('newQuestion', question);
+        }
+        
+        socket.on('playersUpdate', (players) => {
+            document.getElementById('playerCount').textContent = 
+                Object.keys(players).length;
+            
+            let html = '';
+            for (let id in players) {
+                html += `<div>${players[id].name}: ${players[id].score} poäng</div>`;
+            }
+            document.getElementById('players').innerHTML = html;
+        });
+        
+        socket.on('answerUpdate', (answers) => {
+            let html = '';
+            answers.forEach(answer => {
+                html += `<div class="answer ${answer.correct ? 'correct' : ''}">
+                    ${answer.playerName}: ${answer.answer}
+                    ${answer.correct ? '✓' : '✗'}
+                </div>`;
+            });
+            document.getElementById('answers').innerHTML = html;
+        });
+    </script>
+</body>
+</html>
