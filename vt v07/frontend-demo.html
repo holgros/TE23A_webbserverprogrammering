@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Användarhantering - Demo av API</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #333; }
+        section { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+        input, button { padding: 8px; margin: 5px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>📘 Demo av API för användarhantering</h1>
+    
+    <section id="hitta">
+        <h2>1️⃣ Hämta alla användare (GET /users)</h2>
+        <button onclick="hittaAlla()">Hämta alla</button>
+        <div style="margin-top: 10px;">
+            <input type="text" id="searchFirstname" placeholder="Sök på förnamn">
+            <input type="text" id="searchLastname" placeholder="Sök på efternamn">
+            <button onclick="sokaAnvandare()">🔍 Sök</button>
+        </div>
+        <div id="userListResult"></div>
+    </section>
+
+    <section id="hittaEn">
+        <h2>2️⃣ Hämta specifik användare (GET /users/{id})</h2>
+        <input type="number" id="userId" placeholder="Ange ID" min="1">
+        <button onclick="hittaEnAnvandare()">Hämta användare</button>
+        <div id="singleUserResult"></div>
+    </section>
+
+    <section id="skapa">
+        <h2>3️⃣ Skapa ny användare (POST /users)</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <input type="text" id="firstname" placeholder="Förnamn">
+            <input type="text" id="lastname" placeholder="Efternamn">
+            <input type="text" id="userId_new" placeholder="Användarnamn (obligatoriskt)">
+            <input type="password" id="passwd" placeholder="Lösenord">
+        </div>
+        <button onclick="skapaAnvandare()">➕ Skapa användare</button>
+        <div id="createResult"></div>
+    </section>
+
+    <section id="status">
+        <h2>📋 Status från senaste anrop</h2>
+        <pre id="statusOutput">Inget anrop ännu...</pre>
+    </section>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        // Hjälpfunktion för att visa resultat
+        function visaResultat(data, endpoint, status) {
+            const output = {
+                endpoint: endpoint,
+                status: status,
+                data: data,
+                tid: new Date().toLocaleTimeString()
+            };
+            document.getElementById('statusOutput').innerHTML = 
+                JSON.stringify(output, null, 2);
+        }
+
+        // 1. GET /users - hämta alla
+        async function hittaAlla() {
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const data = await response.json();
+                visaResultat(data, 'GET /users', response.status);
+                visaAnvandareTabell(data, 'userListResult');
+            } catch (error) {
+                visaFel(error, 'GET /users');
+            }
+        }
+
+        // 1b. GET /users?firstname=... - sök
+        async function sokaAnvandare() {
+            const firstname = document.getElementById('searchFirstname').value;
+            const lastname = document.getElementById('searchLastname').value;
+            let url = `${API_BASE}/users`;
+            
+            if (firstname || lastname) {
+                url += '?';
+                if (firstname) url += `firstname=${encodeURIComponent(firstname)}`;
+                if (firstname && lastname) url += '&';
+                if (lastname) url += `lastname=${encodeURIComponent(lastname)}`;
+            }
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                visaResultat(data, `GET ${url.replace(API_BASE, '')}`, response.status);
+                visaAnvandareTabell(data, 'userListResult');
+            } catch (error) {
+                visaFel(error, 'GET /users?search');
+            }
+        }
+
+        // 2. GET /users/{id} - hämta en
+        async function hittaEnAnvandare() {
+            const id = document.getElementById('userId').value;
+            if (!id) {
+                alert('Ange ett ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/${id}`);
+                if (response.status === 404) {
+                    visaResultat({ error: 'Användare hittades inte' }, `GET /users/${id}`, 404);
+                    document.getElementById('singleUserResult').innerHTML = 
+                        '<p class="error">❌ Ingen användare med detta ID</p>';
+                } else {
+                    const data = await response.json();
+                    visaResultat(data, `GET /users/${id}`, response.status);
+                    visaAnvandareTabell(data, 'singleUserResult');
+                }
+            } catch (error) {
+                visaFel(error, `GET /users/${id}`);
+            }
+        }
+
+        // 3. POST /users - skapa ny
+        async function skapaAnvandare() {
+            const userData = {
+                firstname: document.getElementById('firstname').value,
+                lastname: document.getElementById('lastname').value,
+                userId: document.getElementById('userId_new').value,
+                passwd: document.getElementById('passwd').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.status === 422) {
+                    const error = await response.text();
+                    visaResultat({ error: 'userId saknas' }, 'POST /users', 422);
+                    document.getElementById('createResult').innerHTML = 
+                        '<p class="error">❌ userId är obligatoriskt!</p>';
+                } else {
+                    const data = await response.json();
+                    visaResultat(data, 'POST /users', response.status);
+                    document.getElementById('createResult').innerHTML = 
+                        `<p class="success">✅ Användare skapad med ID: ${data.id}</p>`;
+                    
+                    // Rensa formuläret
+                    ['firstname', 'lastname', 'userId_new', 'passwd'].forEach(id => 
+                        document.getElementById(id).value = '');
+                }
+            } catch (error) {
+                visaFel(error, 'POST /users');
+            }
+        }
+
+        // Hjälpfunktion för att visa fel
+        function visaFel(error, endpoint) {
+            console.error(error);
+            visaResultat({ error: error.message }, endpoint, 500);
+        }
+
+        // Visa användare i tabell
+        function visaAnvandareTabell(users, targetElementId) {
+            const container = document.getElementById(targetElementId);
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p>Inga användare att visa</p>';
+                return;
+            }
+
+            // Gör om till array om det är ett enskilt objekt
+            const userArray = Array.isArray(users) ? users : [users];
+
+            let html = '<table><tr><th>ID</th><th>Förnamn</th><th>Efternamn</th><th>AnvändarID</th></tr>';
+            userArray.forEach(user => {
+                html += `<tr>
+                    <td>${user.id}</td>
+                    <td>${user.firstname || ''}</td>
+                    <td>${user.lastname || ''}</td>
+                    <td>${user.userId || ''}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            
+            // Visa även antal träffar
+            html += `<p style="margin-top: 10px;">📊 ${userArray.length} användare visas</p>`;
+            
+            container.innerHTML = html;
+        }
+
+    </script>
+</body>
+</html>

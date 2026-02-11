@@ -6,7 +6,11 @@
       <ul>
 
         <li><em>POST /users</em> - skapar en ny användare accepterar JSON objekt på formatet {"firstname": "", "lastname": "", "userId": "unikt namn", "passwd": ""}. <code>userId</code> är obligatoriskt, annars skickas 422-meddelande (unprocessable entity).</li>
-      </p>
+                <li><em>GET /users</em> - returnerar alla användare (går att söka med querysträng, t.ex. /users?firstname=Holger).</li>
+
+        <li><em>GET /users/{id}</em> - returnerar en user med angivet id eller status 404 om användaren saknas.</li>
+        <li><em>GET /demo</em> - en enkel frontendapplikation som öppnas i webbläsaren</li>
+      </ul>
 
     </body>
 
