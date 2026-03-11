@@ -69,9 +69,9 @@ app.post("/users", function (req, res) {
 
 app.post("/login", function (req, res) {
   //kod här för att hantera anrop…
-  let sql = `SELECT * FROM users WHERE userId='${req.body.userId}'`;
+  let sql = `SELECT * FROM users WHERE userId=?`;
 
-  con.query(sql, function (err, result, fields) {
+  con.query(sql, [req.body.userId], function (err, result, fields) {
     if (err) throw err;
     if (result.length == 0) {
       res.sendStatus(401);
