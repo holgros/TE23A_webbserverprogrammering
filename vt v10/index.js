@@ -48,13 +48,10 @@ app.post("/users", function (req, res) {
   // OBS: näst sista raden i SQL-satsen står det hash(req.body.passwd) istället för req.body.passwd
   // Det hashade lösenordet kan ha över 50 tecken, så använd t.ex. typen VARCHAR(100) i databasen, annars riskerar det hashade lösenordet att trunkeras (klippas av i slutet)
   let sql = `INSERT INTO users (firstname, lastname, userId, passwd)
-    VALUES ('${req.body.firstname}', 
-    '${req.body.lastname}',
-    '${req.body.userId}',
-    '${hash(req.body.passwd)}')`; // OBS: lösenordet hashas!
+    VALUES (?, ?, ?, '${hash(req.body.passwd)}')`; // OBS: lösenordet hashas!
   console.log(sql);
 
-  con.query(sql, function (err, result, fields) {
+  con.query(sql, [req.body.firstname, req.body.lastname, req.body.userId], function (err, result, fields) {
     if (err) throw err;
     console.log(result);
     let output = {
