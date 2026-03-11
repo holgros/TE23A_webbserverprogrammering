@@ -34,9 +34,9 @@ const secret = "EnHemlighetSomIngenKanGissaXyz123%&/";
 
 app.post("/login", function (req, res) {
   console.log(req.body);
-  let sql = `SELECT * FROM users WHERE userId='${req.body.userId}'`;
+  let sql = `SELECT * FROM users WHERE userId=?`;
 
-  con.query(sql, function (err, result, fields) {
+  con.query(sql, [req.body.userId], function (err, result, fields) {
     if (err) throw err;
     let passwordHash = hash(req.body.passwd);
     if (result[0].passwd == passwordHash) {
